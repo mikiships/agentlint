@@ -1,0 +1,109 @@
+"""CLI entry points for agentlint."""
+
+from __future__ import annotations
+
+import subprocess
+import sys
+from pathlib import Path
+
+import click
+
+from .config import ConfigError, load_runtime_config
+from .engine import LintEngine, exit_code_for_findings
+from .parser import parse_unified_diff
+from .report import render
+
+
+def _load_diff_text_from_git(range_spec: str | None = None, staged: bool = False) -> str:
+    cmd: list[str] = ["git", "diff"]
+    if staged:
+        cmd.append("--cached")
+    elif range_spec:
+        cmd.append(range_spec)
+    else:
+        cmd.append("HEAD~1..HEAD")
+
+    proc = subprocess.run(cmd, capture_output=True, text=True, check=False)
+    if proc.returncode != 0:
+        raise click.ClickException(proc.stderr.strip() or "failed to read git diff")
+    return proc.stdout
+
+
+@click.group()
+def main() -> None:
+    """Lint AI coding agent git diffs for common problems."""
+
+
+@main.command("check")
+@click.argument("range_spec", required=False)
+@click.option("--staged", is_flag=True, help="Lint staged changes (git diff --cached).")
+@click.option("--stdin", "use_stdin", is_flag=True, help="Read unified diff from stdin.")
+@click.option("--task", "task_description", type=str, help="Task description for scope-aware checks.")
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(["table", "json", "github"], case_sensitive=False),
+    default="table",
+    show_default=True,
+)
+@click.option(
+    "--config",
+    "config_path",
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    default=None,
+    help="Path to an explicit .agentlint.toml file.",
+)
+@click.option(
+    "--no-config",
+    is_flag=True,
+    help="Do not load .agentlint.toml from the current directory tree.",
+)
+@click.option(
+    "--fail-on",
+    type=click.Choice(["warning", "error"], case_sensitive=False),
+    default="warning",
+    show_default=True,
+    help="Severity threshold that causes a non-zero exit code.",
+)
+@click.option(
+    "--quiet",
+    is_flag=True,
+    help="Reduce output decoration for CI/log processing.",
+)
+def check_command(
+    range_spec: str | None,
+    staged: bool,
+    use_stdin: bool,
+    task_description: str | None,
+    output_format: str,
+    config_path: Path | None,
+    no_config: bool,
+    fail_on: str,
+    quiet: bool,
+) -> None:
+    """Run checks against a git diff."""
+
+    if use_stdin and (staged or range_spec):
+        raise click.UsageError("--stdin cannot be combined with --staged or commit range")
+
+    if use_stdin:
+        diff_text = sys.stdin.read()
+    else:
+        diff_text = _load_diff_text_from_git(range_spec=range_spec, staged=staged)
+
+    if no_config and config_path is not None:
+        raise click.UsageError("--no-config cannot be combined with --config")
+
+    try:
+        runtime_config = load_runtime_config(config_path=config_path, no_config=no_config)
+    except ConfigError as exc:
+        raise click.ClickException(str(exc)) from exc
+
+    diff = parse_unified_diff(diff_text)
+    findings = LintEngine().run(diff, task_description=task_description, config=runtime_config)
+    click.echo(render(findings, output_format=output_format, quiet=quiet))
+    raise SystemExit(exit_code_for_findings(findings, fail_on=fail_on))
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,71 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "agentlint"
+version = "0.1.0"
+description = "Lint AI coding agent git diffs using static analysis."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+  { name = "agentlint contributors" }
+]
+keywords = ["lint", "git", "diff", "cli", "static-analysis", "ai"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Software Development :: Quality Assurance",
+  "Environment :: Console",
+]
+dependencies = [
+  "click>=8.1",
+  "rich>=13.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/mordecai/agentlint"
+Repository = "https://github.com/mordecai/agentlint"
+Issues = "https://github.com/mordecai/agentlint/issues"
+Changelog = "https://github.com/mordecai/agentlint/blob/main/CHANGELOG.md"
+
+[project.scripts]
+agentlint = "agentlint.cli:main"
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+  "pytest-cov>=5.0",
+  "ruff>=0.4",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/agentlint"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "/src",
+  "/tests",
+  "/README.md",
+  "/CHANGELOG.md",
+  "/LICENSE",
+  "/progress-log.md",
+]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["E501"]
