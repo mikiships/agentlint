@@ -148,10 +148,15 @@ jobs:
 - Focuses on agent-specific failure patterns in patch output.
 - Fast enough to run on every PR and staged commit.
 
-## Related Projects
+## Part of the Agent Toolkit
 
-- [coderace](https://github.com/openai/coderace)
-- [agentmd](https://github.com/agentmd/agentmd)
+agentlint is one of three tools for AI coding agent quality:
+
+- **[coderace](https://github.com/mikiships/coderace)** — Race coding agents against each other on real tasks. Automated, reproducible, scored comparisons.
+- **[agentmd](https://github.com/mikiships/agentmd)** — Generate and score context files (CLAUDE.md, AGENTS.md, .cursorrules) for AI coding agents.
+- **[agentlint](https://github.com/mikiships/agentlint)** — Lint AI agent git diffs for risky patterns. Static analysis, no LLM required.
+
+Measure (coderace) → Optimize (agentmd) → Guard (agentlint).
 
 ## Contributing
 
