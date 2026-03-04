@@ -56,3 +56,62 @@
 - Deliverables D1 through D5 are fully implemented in the working tree.
 - All tests pass with >80% coverage and >100 test cases.
 - Remaining environment blockers are external to code changes: git write restrictions and build-tool execution constraints in this sandbox.
+
+## 2026-03-04 Build Contract (GitHub Action + v0.2.0) - D1
+- Built JSON reporting schema in `src/agentlint/report.py` with top-level keys `version`, `metadata`, `summary`, and `findings`.
+- Added JSON fields required for CI: finding entries (`severity`, `check`, `file`, `line`, `message`), summary totals/by-severity, and metadata (`version`, `timestamp`).
+- Updated CLI format choices in `src/agentlint/cli.py` to `text|json|markdown` (default `text`) per contract.
+- Updated unit/CLI/integration tests to assert the new JSON schema and content expectations.
+- Tests passed: `pytest -q tests/test_report.py tests/test_cli.py tests/test_integration.py`.
+- Next: implement D2 markdown formatter module and markdown-specific tests.
+- Blockers: none.
+
+## 2026-03-04 Build Contract (GitHub Action + v0.2.0) - D2
+- Added `src/agentlint/formatters.py` with markdown rendering for PR comments.
+- Implemented required markdown structure: report header, summary table (`check | severity | count`), file-grouped findings under collapsible `<details>` blocks, and a footer linking to the project.
+- Wired markdown output in `src/agentlint/report.py` so CLI `--format markdown` now renders structured markdown content.
+- Added markdown-focused unit tests in `tests/test_formatters.py` and extended report/CLI tests for markdown dispatch and output shape.
+- Tests passed: `pytest -q tests/test_formatters.py tests/test_report.py tests/test_cli.py`.
+- Next: implement D3 composite GitHub Action + reusable workflow and YAML validation tests.
+- Blockers: none.
+
+## 2026-03-04 Build Contract (GitHub Action + v0.2.0) - D3
+- Created root `action.yml` composite action with required inputs: `fail-on-error`, `fail-on-warning`, `format`, `comment`, and `python-version` (with contract defaults).
+- Implemented action runtime steps to install from PyPI (`pip install ai-agentlint`), run `agentlint` against `git diff origin/main...HEAD`, and expose outputs `exit-code` and `report`.
+- Added optional PR commenting via `peter-evans/create-or-update-comment@v4` gated by `comment: true` and pull request event context.
+- Added `.github/workflows/agentlint-ci.yml` reusable workflow example triggered on `pull_request`/`workflow_call` that invokes the composite action.
+- Added YAML validation tests (`tests/test_github_action_yaml.py`) that parse both YAML files with `yaml.safe_load` and assert required structure.
+- Updated dev dependencies in `pyproject.toml` to include `PyYAML` for YAML validation tests.
+- Tests passed: `pytest -q tests/test_github_action_yaml.py`.
+- Next: implement D4 integration test updates for JSON/markdown schema checks, exit-code behavior, and empty-diff coverage across all formats.
+- Blockers: none.
+
+## 2026-03-04 Build Contract (GitHub Action + v0.2.0) - D4
+- Updated CLI failure semantics to contract-aligned binary exit codes: `0` for clean and `1` for failing findings.
+- Added/updated integration coverage in `tests/test_integration.py` for:
+  - JSON schema validation on sample diff output.
+  - Markdown structure validation on sample diff output.
+  - Exit-code behavior (`0` clean, `1` for error findings).
+  - Empty-diff clean output across `text`, `json`, and `markdown` formats.
+- Updated affected unit/CLI tests for the new exit-code contract.
+- Tests passed: `pytest -q tests/test_engine.py tests/test_cli.py tests/test_report.py tests/test_formatters.py tests/test_integration.py`.
+- Next: complete D5 docs/version/changelog updates and run full test suite.
+- Blockers: none.
+
+## 2026-03-04 Build Contract (GitHub Action + v0.2.0) - D5
+- Updated docs for v0.2.0:
+  - `README.md` now documents `--format` options (`text|json|markdown`) and includes a copy-paste GitHub workflow snippet that uses the composite action and prints outputs.
+  - `CHANGELOG.md` now includes a `0.2.0` release section covering JSON/markdown output, action/workflow support, and exit-code behavior.
+- Bumped version to `0.2.0` in `pyproject.toml` and `src/agentlint/__init__.py`.
+- Added expanded output-contract coverage in `tests/test_output_contracts.py` to validate JSON/markdown schema behavior across many data combinations.
+- Validation complete:
+  - `pytest --collect-only` reports `134 tests collected`.
+  - `pytest -q` passes for the full suite.
+- Next: none (all deliverables D1-D5 complete).
+- Blockers: none.
+
+## Final Summary (2026-03-04 Build Contract: GitHub Action + v0.2.0)
+- Completed D1 through D5 in order.
+- Added JSON output contract (`version`/`metadata`/`summary`/`findings`), markdown formatter with collapsible file groups, composite GitHub Action, reusable workflow example, YAML validation tests, documentation updates, and version bump to `0.2.0`.
+- Full suite passes with `134` collected tests (above the 130+ target).
+- No blockers remain.

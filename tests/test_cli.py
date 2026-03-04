@@ -50,10 +50,11 @@ def test_cli_json_from_stdin(monkeypatch) -> None:
     runner = CliRunner()
     result = runner.invoke(cli.main, ["check", "--stdin", "--format", "json"], input=SIMPLE_DIFF)
     assert result.exit_code == 1
-    assert '"check_id": "warn_check"' in result.output
+    assert '"check": "warn_check"' in result.output
+    assert '"metadata"' in result.output
 
 
-def test_cli_table_default_format(monkeypatch) -> None:
+def test_cli_text_default_format(monkeypatch) -> None:
     monkeypatch.setattr(cli, "LintEngine", lambda: FakeWarningEngine())
     runner = CliRunner()
     result = runner.invoke(cli.main, ["check", "--stdin"], input=SIMPLE_DIFF)
@@ -120,7 +121,7 @@ def test_cli_error_exit_code(monkeypatch) -> None:
     monkeypatch.setattr(cli, "LintEngine", lambda: FakeErrorEngine())
     runner = CliRunner()
     result = runner.invoke(cli.main, ["check", "--stdin"], input=SIMPLE_DIFF)
-    assert result.exit_code == 2
+    assert result.exit_code == 1
 
 
 def test_cli_clean_exit_code(monkeypatch) -> None:
@@ -157,12 +158,13 @@ def test_cli_json_has_summary(monkeypatch) -> None:
     assert '"summary"' in result.output
 
 
-def test_cli_github_output(monkeypatch) -> None:
+def test_cli_markdown_output(monkeypatch) -> None:
     monkeypatch.setattr(cli, "LintEngine", lambda: FakeErrorEngine())
     runner = CliRunner()
-    result = runner.invoke(cli.main, ["check", "--stdin", "--format", "github"], input=SIMPLE_DIFF)
-    assert result.exit_code == 2
-    assert "::error file=a.py,line=1::" in result.output
+    result = runner.invoke(cli.main, ["check", "--stdin", "--format", "markdown"], input=SIMPLE_DIFF)
+    assert result.exit_code == 1
+    assert "# agentlint Report" in result.output
+    assert "<details>" in result.output
 
 
 def test_cli_quiet_mode(monkeypatch) -> None:

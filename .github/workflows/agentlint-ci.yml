@@ -1,0 +1,40 @@
+name: agentlint-ci
+
+on:
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  lint-pr-diff:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Ensure base ref is available
+        shell: bash
+        run: |
+          git fetch origin main --depth=1
+
+      - name: Run agentlint action
+        id: agentlint
+        uses: ./
+        with:
+          fail-on-error: true
+          fail-on-warning: false
+          format: markdown
+          comment: true
+          python-version: "3.12"
+
+      - name: Emit action outputs
+        if: always()
+        shell: bash
+        run: |
+          echo "exit-code=${{ steps.agentlint.outputs.exit-code }}"
+          printf '%s\n' "${{ steps.agentlint.outputs.report }}"

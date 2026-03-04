@@ -4,10 +4,10 @@ import json
 
 from agentlint.models import CheckResult
 from agentlint.report import (
+    REPORT_SCHEMA_VERSION,
     render,
-    render_github,
     render_json,
-    render_table,
+    render_text,
     summarize,
     summarize_by_file,
 )
@@ -33,32 +33,43 @@ def test_summarize_by_file() -> None:
 
 
 def test_render_json_includes_file_summary() -> None:
-    text = render_json(_sample_findings())
+    text = render_json(
+        _sample_findings(),
+        tool_version="0.2.0",
+        timestamp="2026-03-04T00:00:00Z",
+    )
     payload = json.loads(text)
-    assert payload["summary"]["error"] == 1
-    assert "src/a.py" in payload["files"]
-
-
-def test_render_github_annotations() -> None:
-    text = render_github(_sample_findings())
-    assert "::error file=src/a.py,line=10::" in text
-    assert "::warning file=src/a.py,line=22::" in text
-    assert "::notice::agentlint summary" in text
+    assert payload["version"] == REPORT_SCHEMA_VERSION
+    assert payload["metadata"] == {
+        "version": "0.2.0",
+        "timestamp": "2026-03-04T00:00:00Z",
+    }
+    assert payload["summary"] == {
+        "total": 4,
+        "by_severity": {"error": 1, "warning": 2, "info": 1},
+    }
+    assert payload["findings"][0] == {
+        "severity": "error",
+        "check": "secret_leak",
+        "file": "src/a.py",
+        "line": 10,
+        "message": "secret found",
+    }
 
 
 def test_render_table_has_summary_and_file_section() -> None:
-    text = render_table(_sample_findings())
+    text = render_text(_sample_findings())
     assert "errors=1 warnings=2 info=1" in text
     assert "per-file summary" in text
 
 
 def test_render_table_quiet_mode() -> None:
-    text = render_table(_sample_findings(), quiet=True)
+    text = render_text(_sample_findings(), quiet=True)
     assert text.splitlines()[0] == "errors=1 warnings=2 info=1"
     assert "\t" in text
 
 
 def test_render_dispatch() -> None:
     assert "summary" in render(_sample_findings(), output_format="json")
-    assert "::notice::" in render(_sample_findings(), output_format="github")
-    assert "errors=1" in render(_sample_findings(), output_format="table")
+    assert "errors=1" in render(_sample_findings(), output_format="text")
+    assert "# agentlint Report" in render(_sample_findings(), output_format="markdown")

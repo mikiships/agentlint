@@ -9,7 +9,7 @@
 ## Install
 
 ```bash
-pip install agentlint
+pip install ai-agentlint
 ```
 
 For local development:
@@ -56,11 +56,13 @@ JSON output for automation:
 agentlint check --format json
 ```
 
-GitHub Actions annotations:
+Markdown output for PR comments:
 
 ```bash
-agentlint check --format github --fail-on warning
+agentlint check --format markdown
 ```
+
+Available report formats: `text` (default), `json`, and `markdown`.
 
 ## Checks
 
@@ -107,20 +109,37 @@ CLI config controls:
 
 ## GitHub Actions
 
+Use the bundled composite action in this repository to lint PR diffs and post markdown results as a pull request comment.
+
 ```yaml
 name: agentlint
-on: [pull_request]
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
 
 jobs:
   lint-diff:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
-      - run: pip install agentlint
-      - run: agentlint check HEAD~1..HEAD --format github --fail-on warning
+          fetch-depth: 0
+      - run: git fetch origin main --depth=1
+      - uses: ./
+        id: agentlint
+        with:
+          fail-on-error: true
+          fail-on-warning: false
+          format: markdown
+          comment: true
+          python-version: "3.12"
+      - if: always()
+        run: |
+          echo "exit-code=${{ steps.agentlint.outputs.exit-code }}"
+          printf '%s\n' "${{ steps.agentlint.outputs.report }}"
 ```
 
 ## Why agentlint?

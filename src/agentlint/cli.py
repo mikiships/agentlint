@@ -42,8 +42,8 @@ def main() -> None:
 @click.option(
     "--format",
     "output_format",
-    type=click.Choice(["table", "json", "github"], case_sensitive=False),
-    default="table",
+    type=click.Choice(["text", "json", "markdown"], case_sensitive=False),
+    default="text",
     show_default=True,
 )
 @click.option(

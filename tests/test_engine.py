@@ -90,4 +90,4 @@ def test_exit_code_for_findings_error_threshold() -> None:
 
 def test_exit_code_for_findings_error_always_wins() -> None:
     findings = [CheckResult("a", "m", "error")]
-    assert exit_code_for_findings(findings, fail_on="error") == 2
+    assert exit_code_for_findings(findings, fail_on="error") == 1

@@ -94,7 +94,7 @@ def summarize_findings(findings: list[CheckResult]) -> dict[str, int]:
 def exit_code_for_findings(findings: list[CheckResult], fail_on: str = "warning") -> int:
     counts = summarize_findings(findings)
     if counts["error"] > 0:
-        return 2
+        return 1
     if fail_on == "warning" and counts["warning"] > 0:
         return 1
     return 0

@@ -4,13 +4,17 @@ from __future__ import annotations
 
 import json
 from collections import defaultdict
+from datetime import datetime, timezone
 from io import StringIO
 
 from rich.console import Console
 from rich.table import Table
 
 from .engine import summarize_findings
+from .formatters import render_markdown
 from .models import CheckResult
+
+REPORT_SCHEMA_VERSION = "1.0.0"
 
 
 def summarize(findings: list[CheckResult]) -> dict[str, int]:
@@ -68,7 +72,7 @@ def _table_for_files(per_file: dict[str, dict[str, int]], quiet: bool) -> Table:
     return table
 
 
-def render_table(findings: list[CheckResult], quiet: bool = False) -> str:
+def render_text(findings: list[CheckResult], quiet: bool = False) -> str:
     summary = summarize(findings)
     per_file = summarize_by_file(findings)
 
@@ -95,15 +99,47 @@ def render_table(findings: list[CheckResult], quiet: bool = False) -> str:
     return output.getvalue().rstrip()
 
 
-def render_json(findings: list[CheckResult]) -> str:
-    summary = summarize(findings)
-    per_file = summarize_by_file(findings)
+def _utc_timestamp() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def _json_findings(findings: list[CheckResult]) -> list[dict[str, object]]:
+    return [
+        {
+            "severity": finding.severity,
+            "check": finding.check_id,
+            "file": finding.file_path,
+            "line": finding.line,
+            "message": finding.message,
+        }
+        for finding in findings
+    ]
+
+
+def render_json(
+    findings: list[CheckResult],
+    *,
+    tool_version: str = "unknown",
+    timestamp: str | None = None,
+) -> str:
+    if tool_version == "unknown":
+        from . import __version__
+
+        tool_version = __version__
+    severity_counts = summarize(findings)
     payload = {
-        "summary": summary,
-        "files": per_file,
-        "results": [finding.to_dict() for finding in findings],
+        "version": REPORT_SCHEMA_VERSION,
+        "metadata": {
+            "version": tool_version,
+            "timestamp": timestamp or _utc_timestamp(),
+        },
+        "summary": {
+            "total": len(findings),
+            "by_severity": severity_counts,
+        },
+        "findings": _json_findings(findings),
     }
-    return json.dumps(payload, sort_keys=True, indent=2)
+    return json.dumps(payload, indent=2)
 
 
 def _gha_escape(text: str) -> str:
@@ -140,8 +176,18 @@ def render_github(findings: list[CheckResult]) -> str:
 
 
 def render(findings: list[CheckResult], output_format: str, quiet: bool = False) -> str:
+    if output_format == "text":
+        return render_text(findings, quiet=quiet)
     if output_format == "json":
         return render_json(findings)
+    if output_format == "markdown":
+        return render_markdown(findings)
     if output_format == "github":
         return render_github(findings)
-    return render_table(findings, quiet=quiet)
+    return render_text(findings, quiet=quiet)
+
+
+def render_table(findings: list[CheckResult], quiet: bool = False) -> str:
+    """Backward-compatible alias for historical tests and callers."""
+
+    return render_text(findings, quiet=quiet)

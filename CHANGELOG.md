@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.0] - 2026-03-04
+
+### Added
+- Contract JSON report schema for CI integrations with top-level `version`, `metadata`, `summary`, and `findings`.
+- Markdown formatter (`--format markdown`) with grouped file findings in collapsible `<details>` blocks for PR comments.
+- Composite GitHub Action (`action.yml`) with inputs for failure thresholds, output format, optional PR commenting, and Python version selection.
+- Reusable workflow example at `.github/workflows/agentlint-ci.yml` for `pull_request` and `workflow_call`.
+- YAML validation tests using `yaml.safe_load` for action and workflow files.
+
+### Changed
+- CLI format choices now use `text|json|markdown` (default `text`).
+- Exit code behavior is now binary (`0` clean, `1` failing findings).
+- Project version bumped to `0.2.0`.
+
 ## [0.1.0] - 2026-03-03
 
 ### Added

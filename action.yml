@@ -1,0 +1,97 @@
+name: "agentlint"
+description: "Run agentlint on a PR diff and optionally post a PR comment"
+
+inputs:
+  fail-on-error:
+    description: "Fail the action when error findings are present"
+    required: false
+    default: "true"
+  fail-on-warning:
+    description: "Fail the action when warning findings are present"
+    required: false
+    default: "false"
+  format:
+    description: "Output format for the report"
+    required: false
+    default: "text"
+  comment:
+    description: "Post the report as a PR comment"
+    required: false
+    default: "true"
+  python-version:
+    description: "Python version used to run agentlint"
+    required: false
+    default: "3.12"
+
+outputs:
+  exit-code:
+    description: "Exit code produced by agentlint"
+    value: ${{ steps.run-agentlint.outputs.exit-code }}
+  report:
+    description: "Formatted agentlint report"
+    value: ${{ steps.run-agentlint.outputs.report }}
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Install agentlint
+      shell: bash
+      run: pip install ai-agentlint
+
+    - name: Run agentlint on PR diff
+      id: run-agentlint
+      shell: bash
+      run: |
+        set +e
+
+        case "${{ inputs.format }}" in
+          text|json|markdown) ;;
+          *)
+            echo "Unsupported format '${{ inputs.format }}'. Expected one of: text, json, markdown." >&2
+            exit 2
+            ;;
+        esac
+
+        fail_flag="error"
+        if [ "${{ inputs.fail-on-warning }}" = "true" ]; then
+          fail_flag="warning"
+        fi
+
+        report_path="$RUNNER_TEMP/agentlint-report.txt"
+        git diff origin/main...HEAD | agentlint check --stdin --format "${{ inputs.format }}" --fail-on "$fail_flag" > "$report_path"
+        exit_code=$?
+
+        should_fail="false"
+        if [ "$exit_code" -ne 0 ] && [ "${{ inputs.fail-on-warning }}" = "true" ]; then
+          should_fail="true"
+        elif [ "$exit_code" -ne 0 ] && [ "${{ inputs.fail-on-error }}" = "true" ]; then
+          should_fail="true"
+        fi
+
+        {
+          echo "exit-code=$exit_code"
+          echo "should-fail=$should_fail"
+          echo "report<<EOF"
+          cat "$report_path"
+          echo "EOF"
+        } >> "$GITHUB_OUTPUT"
+
+    - name: Comment on pull request
+      if: ${{ inputs.comment == 'true' && github.event_name == 'pull_request' }}
+      uses: peter-evans/create-or-update-comment@v4
+      with:
+        issue-number: ${{ github.event.pull_request.number }}
+        body: |
+          ## agentlint report
+
+          ${{ steps.run-agentlint.outputs.report }}
+
+    - name: Enforce failure policy
+      if: ${{ steps.run-agentlint.outputs.should-fail == 'true' }}
+      shell: bash
+      run: exit 1
