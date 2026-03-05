@@ -1,5 +1,9 @@
 name: "agentlint"
 description: "Run agentlint on a PR diff and optionally post a PR comment"
+author: "mikiships"
+branding:
+  icon: "shield"
+  color: "orange"
 
 inputs:
   fail-on-error:
