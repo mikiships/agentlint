@@ -12,7 +12,7 @@ license = { text = "MIT" }
 authors = [
   { name = "agentlint contributors" }
 ]
-keywords = ["lint", "git", "diff", "cli", "static-analysis", "ai"]
+keywords = ["lint", "git", "diff", "cli", "static-analysis", "ai", "coding-agent", "code-review", "ci-cd", "claude-code", "codex", "aider"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
@@ -30,10 +30,10 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/mordecai/agentlint"
-Repository = "https://github.com/mordecai/agentlint"
-Issues = "https://github.com/mordecai/agentlint/issues"
-Changelog = "https://github.com/mordecai/agentlint/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/mikiships/agentlint"
+Repository = "https://github.com/mikiships/agentlint"
+Issues = "https://github.com/mikiships/agentlint/issues"
+Changelog = "https://github.com/mikiships/agentlint/blob/main/CHANGELOG.md"
 
 [project.scripts]
 agentlint = "agentlint.cli:main"
