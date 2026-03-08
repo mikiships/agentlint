@@ -78,6 +78,8 @@ Available report formats: `text` (default), `json`, and `markdown`.
   Example: add `flask==3.0.0` to `requirements.txt` without dependency-related task text.
 - `todo_bombs`: Warns/errors on TODO/FIXME/HACK spikes.
   Example: adding 4 TODO markers raises an error.
+- `mcp_permissions`: Errors on dangerous MCP server configuration patterns.
+  Example: `.mcp.json` with `"autoApprove": true` or `"autoApprove": ["*"]` (related to CVE-2026-21852 auto-approve bypass).
 - `permission_escalation`: Errors on risky patterns (`sudo`, permissive `chmod`, `eval`, `exec`, `shell=True`, `os.system`).
   Example: `subprocess.run(cmd, shell=True)`.
 - `dead_code`: Warns on added commented-out code blocks (5+ lines).

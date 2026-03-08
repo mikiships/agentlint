@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.0] - 2026-03-08
+
+### Added
+- New `mcp_permissions` check: flags dangerous MCP (Model Context Protocol) configuration patterns in diffs.
+  - Detects `autoApprove: true` (boolean) — bypasses all per-tool approval prompts.
+  - Detects `autoApprove: ["*"]` — wildcard grants unrestricted auto-approval.
+  - Detects `trustLevel: "all"` — grants unrestricted trust to an MCP server.
+  - Detects filesystem root access (`roots: ["/"]`) — overly broad path permissions.
+  - Works via line-pattern matching (any file) and structural JSON parsing (`.mcp.json` / `claude_config.json`).
+  - 23 new tests covering file-path detection, false positives, edge cases, and clean configs.
+- Version bumped to `0.3.0`.
+
 ## [0.2.0] - 2026-03-04
 
 ### Added
