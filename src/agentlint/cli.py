@@ -9,6 +9,8 @@ from pathlib import Path
 import click
 
 from .config import ConfigError, load_runtime_config
+from .context_checker import ContextChecker, _auto_detect_context_file
+from .context_formatters import format_context_report
 from .engine import LintEngine, exit_code_for_findings
 from .parser import parse_unified_diff
 from .report import render
@@ -103,6 +105,59 @@ def check_command(
     findings = LintEngine().run(diff, task_description=task_description, config=runtime_config)
     click.echo(render(findings, output_format=output_format, quiet=quiet))
     raise SystemExit(exit_code_for_findings(findings, fail_on=fail_on))
+
+
+@main.command("check-context")
+@click.argument("file", required=False, type=click.Path(exists=False, path_type=Path))
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(["text", "json", "markdown"], case_sensitive=False),
+    default="text",
+    show_default=True,
+    help="Output format.",
+)
+@click.option(
+    "--repo-root",
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
+    default=None,
+    help="Repository root for path resolution (default: cwd).",
+)
+@click.option(
+    "--no-config",
+    is_flag=True,
+    help="Skip .agentlint.toml configuration.",
+)
+def check_context_command(
+    file: Path | None,
+    output_format: str,
+    repo_root: Path | None,
+    no_config: bool,
+) -> None:
+    """Validate an AGENTS.md / CLAUDE.md context file for staleness and bloat.
+
+    FILE defaults to the first of AGENTS.md, CLAUDE.md, GEMINI.md, .cursorrules
+    found in the current directory.
+    """
+    resolved_root = repo_root or Path.cwd()
+
+    if file is None:
+        file = _auto_detect_context_file(resolved_root)
+        if file is None:
+            raise click.ClickException(
+                "No context file found. Pass a FILE argument or create AGENTS.md / CLAUDE.md."
+            )
+    else:
+        if not file.is_absolute():
+            file = resolved_root / file
+        if not file.exists():
+            raise click.ClickException(f"File not found: {file}")
+
+    checker = ContextChecker(file_path=file, repo_root=resolved_root)
+    report = checker.run()
+    click.echo(format_context_report(report, output_format=output_format))
+    if report.error_count > 0:
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":
