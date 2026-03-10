@@ -6,6 +6,13 @@ branding:
   color: "orange"
 
 inputs:
+  mode:
+    description: "Action mode: run (default), review, or context-check"
+    required: false
+    default: "run"
+  context-file:
+    description: "Path to context file for context-check mode (default: auto-detect)"
+    required: false
   fail-on-error:
     description: "Fail the action when error findings are present"
     required: false
@@ -34,6 +41,12 @@ outputs:
   report:
     description: "Formatted agentlint report"
     value: ${{ steps.run-agentlint.outputs.report }}
+  freshness-score:
+    description: "Context freshness score (0-100) — populated in context-check mode"
+    value: ${{ steps.run-context-check.outputs.freshness-score }}
+  context-findings:
+    description: "JSON array of context findings — populated in context-check mode"
+    value: ${{ steps.run-context-check.outputs.context-findings }}
 
 runs:
   using: composite
@@ -94,6 +107,13 @@ runs:
           ## agentlint report
 
           ${{ steps.run-agentlint.outputs.report }}
+
+    - name: Run context check
+      id: run-context-check
+      if: ${{ inputs.mode == 'context-check' }}
+      shell: bash
+      run: |
+        bash "${{ github.action_path }}/scripts/ci-context-check.sh" "${{ inputs.context-file }}"
 
     - name: Enforce failure policy
       if: ${{ steps.run-agentlint.outputs.should-fail == 'true' }}
