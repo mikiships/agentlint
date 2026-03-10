@@ -144,6 +144,57 @@ jobs:
           printf '%s\n' "${{ steps.agentlint.outputs.report }}"
 ```
 
+## Context File Validation
+
+Beyond linting git diffs, `agentlint` can validate your context files (AGENTS.md, CLAUDE.md, GEMINI.md) directly for staleness, bloat, and internal conflicts.
+
+```bash
+agentlint check-context
+```
+
+Or target a specific file:
+
+```bash
+agentlint check-context CLAUDE.md --format json
+```
+
+### Context checks
+
+| ID | Severity | What it catches |
+| --- | --- | --- |
+| `CTX001` | warning | **path-rot** — file/dir paths mentioned in the context file that no longer exist |
+| `CTX002` | warning | **script-rot** — `npm run <script>` references missing from `package.json` |
+| `CTX003` | warning/error | **bloat** — context files >8k chars (warning) or >15k chars (error); per ETH Zurich ICSE 2026, stale context adds ~20% token overhead |
+| `CTX004` | info | **stale-todos** — TODO/FIXME/HACK/XXX markers that may confuse agents |
+| `CTX005` | warning | **year-rot** — references to 2023 or earlier may be outdated guidance |
+| `CTX006` | warning | **multi-file-conflict** — conflicting test/build commands across multiple context files |
+
+### Freshness score
+
+Every run produces a **freshness score** (0–100). Each finding deducts points:
+- error: −15
+- warning: −5
+- info: −2
+
+A score below 70 suggests the context file needs a cleanup pass.
+
+### Works alongside `agentlint check`
+
+`agentlint check` lints what agents *write* (git diffs). `agentlint check-context` lints what agents *read* (context files). Together they cover the full agent quality surface.
+
+### CI integration
+
+Add a weekly context health check with the bundled GitHub Action:
+
+```yaml
+- uses: mikiships/agentlint@main
+  with:
+    mode: context-check
+    # context-file: AGENTS.md  # optional, auto-detected otherwise
+```
+
+See [`.github/workflows/examples/agentlint-context-check.yml`](.github/workflows/examples/agentlint-context-check.yml) for a full example.
+
 ## Why agentlint?
 
 - Enforces deterministic, static checks suitable for CI gates.

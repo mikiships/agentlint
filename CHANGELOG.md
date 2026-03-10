@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.0] - 2026-03-10
+
+### Added
+- New `check-context` command: validates AGENTS.md, CLAUDE.md, GEMINI.md, and similar context files for staleness, bloat, and conflicts — no git diff required.
+- Six new context checks:
+  - `CTX001 path-rot` — detects referenced file/directory paths that no longer exist.
+  - `CTX002 script-rot` — detects `npm run <script>` references missing from `package.json`.
+  - `CTX003 bloat` — flags context files >8k chars (warning) or >15k chars (error) with ETH Zurich ICSE 2026 stat.
+  - `CTX004 stale-todos` — flags TODO/FIXME/HACK/XXX markers as agent-confusing noise.
+  - `CTX005 year-rot` — flags references to years 2023 and earlier as potentially stale guidance.
+  - `CTX006 multi-file-conflict` — detects conflicting test/build commands across multiple context files.
+- Freshness score (0–100): computed from findings (error −15, warning −5, info −2).
+- `--format text|json|markdown` for `check-context` output.
+- `--repo-root` option to control path resolution in `check-context`.
+- `action.yml` updated: new `mode: context-check` input, `context-file` input, `freshness-score` and `context-findings` outputs.
+- `scripts/ci-context-check.sh`: CI helper that runs context check and emits GitHub Action step outputs.
+- Example workflow at `.github/workflows/examples/agentlint-context-check.yml` (weekly schedule + on push to context files).
+- 57 new tests covering all 6 checks, CLI integration, and all 3 formatters.
+
 ## [0.3.0] - 2026-03-08
 
 ### Added
