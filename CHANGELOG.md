@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.2] — 2026-03-13
+
+### Fixed
+
+- `check-context` path-rot check no longer generates false-positive warnings for bare file extensions (e.g. `.py`, `.md`, `.toml`, `.gz`). Extension-only tokens in CLAUDE.md "Common file extensions" sections now correctly pass through without being treated as filesystem paths.
+
 ## [0.4.1] — 2026-03-13
 
 ### Fixed

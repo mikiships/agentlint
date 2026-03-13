@@ -78,6 +78,9 @@ class ContextChecker:
                 if raw in seen:
                     continue
                 seen.add(raw)
+                # Skip bare file extensions (e.g. ".py", ".md") — not paths
+                if re.fullmatch(r"\.[a-zA-Z0-9]+", raw):
+                    continue
                 # Expand ~ to home
                 expanded = Path(raw.replace("~", str(Path.home())))
                 if not expanded.is_absolute():
