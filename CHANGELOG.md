@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1] — 2026-03-13
+
+### Fixed
+
+- `check-context` no longer crashes with `IsADirectoryError` when a directory path is passed as the FILE argument. Directories are now treated as the repo root and the context file is auto-detected from within them (e.g. `agentlint check-context .` now works correctly). Added 2 regression tests.
+
+
 All notable changes to this project will be documented in this file.
 
 ## [0.4.0] - 2026-03-10

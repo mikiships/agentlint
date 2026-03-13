@@ -152,6 +152,14 @@ def check_context_command(
             file = resolved_root / file
         if not file.exists():
             raise click.ClickException(f"File not found: {file}")
+        # If a directory was passed, auto-detect from it
+        if file.is_dir():
+            resolved_root = file
+            file = _auto_detect_context_file(resolved_root)
+            if file is None:
+                raise click.ClickException(
+                    f"No context file found in {resolved_root}. Create AGENTS.md / CLAUDE.md."
+                )
 
     checker = ContextChecker(file_path=file, repo_root=resolved_root)
     report = checker.run()

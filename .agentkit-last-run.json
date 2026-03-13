@@ -1,0 +1,88 @@
+{
+  "timestamp": "2026-03-12T17:01:08.589503+00:00",
+  "project": "/Users/mordecai/repos/agentlint",
+  "steps": [
+    {
+      "step": "generate",
+      "tool": "agentmd",
+      "status": "pass",
+      "returncode": 0,
+      "duration": 0.21,
+      "output": "skip  CLAUDE.md  (exists; use --force to overwrite)\n  skip  AGENTS.md  (exists; use --force to overwrite)\n  skip  .cursorrules  (exists; use --force to overwrite)\n  skip  copilot-instructions.md  (exists; use --force to overwrite)"
+    },
+    {
+      "step": "lint-context",
+      "tool": "agentlint",
+      "status": "pass",
+      "returncode": 0,
+      "duration": 0.11,
+      "output": "agentlint context check: CLAUDE.md\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nCTX001 WARNING line 32     \u26a0\ufe0f  path-rot: .py does not exist\nCTX001 WARNING line 32     \u26a0\ufe0f  path-rot: .md does not exist\nCTX001 WARNING line 32     \u26a0\ufe0f  path-rot: .toml does not exist\nCTX001 WARNING line 32     \u26a0\ufe0f  path-rot: .yml does not exist\nCTX001 WARNING line 38     \u26a0\ufe0f  path-rot: /compact does not exist\nCTX001 WARNING line 39     \u26a0\ufe0f  path-rot: /review does not exist\nCTX001 WARNING line 40     \u26a0\ufe0f  path-rot: /init does not exist\n\nFreshness score: 65/100\n7 findings (7 warnings)"
+    },
+    {
+      "step": "lint-diff",
+      "tool": "agentlint",
+      "status": "pass",
+      "returncode": 0,
+      "duration": 0.1,
+      "output": "errors=0 warnings=0 info=0\n             agentlint findings             \n\u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2533\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2533\u2501\u2501\u2501\u2501\u2501\u2501\u2533\u2501\u2501\u2501\u2501\u2501\u2501\u2533\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513\n\u2503 severity \u2503 check \u2503 file \u2503 line \u2503 message \u2503\n\u2521\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2547\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2547\u2501\u2501\u2501\u2501\u2501\u2501\u2547\u2501\u2501\u2501\u2501\u2501\u2501\u2547\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2529\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\n         per-file summary          \n\u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2533\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2533\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2533\u2501\u2501\u2501\u2501\u2501\u2501\u2513\n\u2503 file \u2503 errors \u2503 warnings \u2503 info \u2503\n\u2521\u2501\u2501\u2501\u2501\u2501\u2501\u2547\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2547\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2547\u2501\u2501\u2501\u2501\u2501\u2501\u2529\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2518"
+    },
+    {
+      "step": "benchmark",
+      "tool": "coderace",
+      "status": "skipped",
+      "reason": "opt-in only (use --benchmark)",
+      "duration": 0.0
+    },
+    {
+      "step": "reflect",
+      "tool": "agentreflect",
+      "status": "pass",
+      "returncode": 0,
+      "duration": 0.05,
+      "output": "## agentreflect suggestions (2026-03-12)\n\n### From: notes\n\n- [ ] Write a regression test that reproduces the described failure before fixing it\n- [ ] Add error handling and logging around the failing operation to capture failure context\n\n_Source: 1 failure analyzed, 2 suggestions generated_"
+    }
+  ],
+  "summary": {
+    "steps": [
+      {
+        "step": "generate",
+        "status": "pass",
+        "duration": 0.21,
+        "notes": "skip  CLAUDE.md  (exists; use --force to overwrite)\n  skip  "
+      },
+      {
+        "step": "lint-context",
+        "status": "pass",
+        "duration": 0.11,
+        "notes": "agentlint context check: CLAUDE.md\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500"
+      },
+      {
+        "step": "lint-diff",
+        "status": "pass",
+        "duration": 0.1,
+        "notes": "errors=0 warnings=0 info=0\n             agentlint findings  "
+      },
+      {
+        "step": "benchmark",
+        "status": "skipped",
+        "duration": 0.0,
+        "notes": "opt-in only (use --benchmark)"
+      },
+      {
+        "step": "reflect",
+        "status": "pass",
+        "duration": 0.05,
+        "notes": "## agentreflect suggestions (2026-03-12)\n\n### From: notes\n\n-"
+      }
+    ],
+    "total": 5,
+    "passed": 4,
+    "failed": 0,
+    "skipped": 1,
+    "result": "pass"
+  },
+  "total": 5,
+  "passed": 4,
+  "failed": 0,
+  "skipped": 1
+}

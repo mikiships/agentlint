@@ -117,3 +117,23 @@ def test_exit_0_when_only_warnings(runner: CliRunner, tmp_path: Path) -> None:
         main, ["check-context", str(p), "--repo-root", str(tmp_path)]
     )
     assert result.exit_code == 0
+
+
+# ---------------------------------------------------------------------------
+# Directory as FILE arg (regression: was IsADirectoryError)
+# ---------------------------------------------------------------------------
+
+def test_directory_arg_auto_detects_context_file(runner: CliRunner, tmp_path: Path) -> None:
+    """Passing a directory as FILE should auto-detect AGENTS.md inside it."""
+    p = tmp_path / "AGENTS.md"
+    p.write_text("# Instructions\n\nRun pytest to test.\n")
+    result = runner.invoke(main, ["check-context", str(tmp_path)])
+    assert result.exit_code == 0, result.output
+    assert "CTX" in result.output or "score" in result.output.lower() or "freshness" in result.output.lower()
+
+
+def test_directory_arg_no_context_file_error(runner: CliRunner, tmp_path: Path) -> None:
+    """Passing a directory with no context file should give a clear error."""
+    result = runner.invoke(main, ["check-context", str(tmp_path)])
+    assert result.exit_code != 0
+    assert "No context file" in result.output
