@@ -81,6 +81,9 @@ class ContextChecker:
                 # Skip bare file extensions (e.g. ".py", ".md") — not paths
                 if re.fullmatch(r"\.[a-zA-Z0-9]+", raw):
                     continue
+                # Skip CLI slash-commands (e.g. "/compact", "/review") — not filesystem paths
+                if re.fullmatch(r"/[a-z][a-z_-]*", raw):
+                    continue
                 # Expand ~ to home
                 expanded = Path(raw.replace("~", str(Path.home())))
                 if not expanded.is_absolute():

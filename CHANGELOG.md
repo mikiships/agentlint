@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.3] — 2026-03-13
+
+### Fixed
+
+- `check-context` path-rot check no longer generates false-positive warnings for Claude Code slash-commands (e.g. `/compact`, `/review`, `/init`) that appear in "Claude Code Tips" sections of generated CLAUDE.md files.
+
 ## [0.4.2] — 2026-03-13
 
 ### Fixed
